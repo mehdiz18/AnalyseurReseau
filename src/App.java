@@ -14,7 +14,7 @@ public class App {
         System.out.println(sp.getEthernetFrame());
         System.out.println(sp.getIpPacket());
         System.out.println(sp.getTcpSegment());
-        System.out.println(sp.getHttp());
+        // System.out.println(sp.getHttp());
         bf.close();
     }
 }

@@ -73,21 +73,22 @@ public class Split {
                 ipPacket.getTotalLength() - ipPacket.getHeaderLength() - thl, window);
     }
 
-    private void parseHttp() {
-        httpString = tcpSegmentString.substring((tcpSegment.getTcpSegmentLength() + tcpSegment.getThl()) * 2);
-        String[] httpTab = httpString.replace(" ", "").split("20|0d0a");
-        System.out.println(httpString);
-        // if (tcpSegment.getSourcePort() == 80) {
-        // String version = toAscii(httpTab[0]);
-        // String codeReponse = toAscii(httpTab[1]);
-        // httpHeader = new HttpResponse(version, codeReponse);
-        // } else if (tcpSegment.getDestinationPort() == 80) {
-        // String methode = toAscii(httpTab[0]);
-        // String url = toAscii(httpTab[1]);
-        // String version = toAscii(httpTab[2]);
-        // httpHeader = new HttpRequest(methode, url, version);
-        // }
-    }
+    // private void parseHttp() {
+    // httpString = tcpSegmentString.substring((tcpSegment.getTcpSegmentLength() +
+    // tcpSegment.getThl()) * 2);
+    // String[] httpTab = httpString.replace(" ", "").split("20|0d0a");
+    // System.out.println(httpString);
+    // // if (tcpSegment.getSourcePort() == 80) {
+    // // String version = toAscii(httpTab[0]);
+    // // String codeReponse = toAscii(httpTab[1]);
+    // // httpHeader = new HttpResponse(version, codeReponse);
+    // // } else if (tcpSegment.getDestinationPort() == 80) {
+    // // String methode = toAscii(httpTab[0]);
+    // // String url = toAscii(httpTab[1]);
+    // // String version = toAscii(httpTab[2]);
+    // // httpHeader = new HttpRequest(methode, url, version);
+    // // }
+    // }
 
     public Ethernet getEthernetFrame() {
         this.parseEthernetFrame();
@@ -108,10 +109,10 @@ public class Split {
         return this.tcpSegment;
     }
 
-    public Http getHttp() {
-        this.parseHttp();
-        return httpHeader;
-    }
+    // public Http getHttp() {
+    // this.parseHttp();
+    // return httpHeader;
+    // }
 
     private String toAscii(String hexString) {
         StringBuilder asciiString = new StringBuilder();
