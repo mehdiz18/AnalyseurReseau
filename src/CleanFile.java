@@ -18,15 +18,23 @@ public class CleanFile {
             BufferedWriter bWriter = new BufferedWriter(new FileWriter(cleanFile));
             String st;
             String[] stTab;
+            int i = 1;
             while ((st = bf.readLine()) != null) {
                 // Sauter les lignes vides
-                if (st.isEmpty()) {
+                if (st.isBlank()) {
                     bWriter.newLine();
-                    continue;
+                } else {
+                    String cleanString = "";
+                    // Je split sur 2 espaces ou plus
+                    stTab = st.split("  +");
+                    for (int j = 1; j < stTab.length; j++) {
+                        if (stTab[j].matches("^[0-9a-fA-F ]+$")) {
+                            cleanString += stTab[j];
+                        }
+                    }
+                    bWriter.write(cleanString + " ", 0, cleanString.length() + 1);
                 }
-                // Je split sur 2 espaces ou plus
-                stTab = st.split("  +");
-                bWriter.write(stTab[1] + " ", 0, stTab[1].length() + 1);
+                i++;
             }
             bf.close();
             bWriter.close();

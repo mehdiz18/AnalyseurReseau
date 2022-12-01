@@ -1,3 +1,6 @@
+import java.util.HashMap;
+import java.util.Map;
+
 public class TCPSegment {
     private int sPort;
     private int dPort;
@@ -6,8 +9,10 @@ public class TCPSegment {
     private int thl;
     private int window;
     private int tcpSegmentLength;
+    private HashMap<String, Boolean> flags;
 
-    public TCPSegment(int sPort, int dPort, int seq, int ack, int thl, int tcpSegmentLength, int window) {
+    public TCPSegment(int sPort, int dPort, int seq, int ack, int thl, int tcpSegmentLength,
+            HashMap<String, Boolean> flags, int window) {
         this.sPort = sPort;
         this.dPort = dPort;
         this.seq = seq;
@@ -15,6 +20,7 @@ public class TCPSegment {
         this.thl = thl;
         this.window = window;
         this.tcpSegmentLength = tcpSegmentLength;
+        this.flags = flags;
     }
 
     public int getThl() {
@@ -37,8 +43,15 @@ public class TCPSegment {
     public String toString() {
         String ANSI_GREEN = "\u001B[42m";
         String ANSI_RESET = "\u001B[0m";
-        return ANSI_GREEN + "TCP Segment" + ANSI_RESET + " Source Port: " + sPort + " ; Destination Port: " + dPort
-                + " ; Sequence Number: " + seq + " ; Acknowledgment Number: " + ack + " ; Header Length: " + thl
-                + " ; Window: " + window;
+        String ret = ANSI_GREEN + "TCP Segment" + ANSI_RESET + " Source Port: " + sPort + " ; Destination Port: "
+                + dPort + " ; Sequence Number: " + seq + " ; Acknowledgment Number: " + ack + " ; Header Length: " + thl
+                + " ; Flags: ";
+        for (String flagName : flags.keySet()) {
+            if (flags.get(flagName)) {
+                ret += flagName + " : true ; ";
+            }
+        }
+        ret += " Window: " + window;
+        return ret;
     }
 }
