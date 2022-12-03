@@ -26,6 +26,7 @@ public class CleanFile {
                     String cleanString = "";
                     // Je split sur 2 espaces ou plus
                     stTab = st.split("  +");
+                    // Si je rencontre du texte
                     if (stTab.length >= 2) {
                         for (int j = 1; j < stTab.length; j++) {
                             if (stTab[j].matches("^[0-9a-fA-F ]+$")) {
