@@ -1,6 +1,6 @@
 import java.util.HashMap;
 
-public class TCPSegment {
+public class TCPSegment implements Packet {
     private int sPort;
     private int dPort;
     private int seq;

@@ -1,6 +1,12 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
-public class Split {
+public class Parser {
     private String packets;
     private Ethernet ethernetFrame;
     private IPPacket ipPacket;
@@ -8,9 +14,10 @@ public class Split {
     private Http httpHeader;
     private String tcpSegmentString;
     private String httpString;
+    private File file;
 
-    public Split(String packets) {
-        this.packets = packets;
+    public Parser(File file) {
+        this.file = file;
     }
 
     private void parseEthernetFrame() {
@@ -23,38 +30,42 @@ public class Split {
 
     private void parseIPPacket() {
         try {
-            String ipPackeString = this.packets.substring(42);
-            int version = Integer.parseInt(ipPackeString.substring(0, 1), 16);
-            int headerLength = Integer.parseInt(ipPackeString.substring(1, 2), 16) * 4;
-            int totalLength = Integer.parseInt(ipPackeString.substring(6, 11).replace(" ", ""), 16);
-            String id = ipPackeString.substring(12, 17).replace(" ", "");
-            int fragmentation = Integer.parseInt(ipPackeString.substring(18, 20), 16);
-            String fragBinary = Integer.toBinaryString(fragmentation);
-            if (fragBinary.length() < 8) {
-                fragBinary = "0".repeat(8 - fragBinary.length()) + fragBinary;
-            }
-            boolean r = false;
-            boolean df = fragBinary.substring(1, 2).equals("1");
-            boolean mf = fragBinary.substring(2, 3).equals("1");
-            String fragOffsetString = String.format("%x", Integer.parseInt(fragBinary.substring(3), 2))
-                    + ipPackeString.substring(21, 23);
-            int fragOffset = Integer.parseInt(fragOffsetString, 16);
-            int ttl = Integer.parseInt(ipPackeString.substring(24, 26), 16);
-            int protocol = Integer.parseInt(ipPackeString.substring(27, 29), 16);
-            String[] sIPTab = ipPackeString.substring(36, 47).split(" ");
-            String[] dIPTab = ipPackeString.substring(48, 60).split(" ");
-            String sIP = "";
-            String dIP = "";
-            for (int i = 0; i < 4; i++) {
-                sIP += Integer.parseInt(sIPTab[i], 16);
-                dIP += Integer.parseInt(dIPTab[i], 16);
-                if (i < 3) {
-                    sIP += ".";
-                    dIP += ".";
+            if (ethernetFrame.getType().equals("0800")) {
+                String ipPackeString = this.packets.substring(42);
+                int version = Integer.parseInt(ipPackeString.substring(0, 1), 16);
+                int headerLength = Integer.parseInt(ipPackeString.substring(1, 2), 16) * 4;
+                int totalLength = Integer.parseInt(ipPackeString.substring(6, 11).replace(" ", ""), 16);
+                String id = ipPackeString.substring(12, 17).replace(" ", "");
+                int fragmentation = Integer.parseInt(ipPackeString.substring(18, 20), 16);
+                String fragBinary = Integer.toBinaryString(fragmentation);
+                if (fragBinary.length() < 8) {
+                    fragBinary = "0".repeat(8 - fragBinary.length()) + fragBinary;
                 }
+                boolean r = false;
+                boolean df = fragBinary.substring(1, 2).equals("1");
+                boolean mf = fragBinary.substring(2, 3).equals("1");
+                String fragOffsetString = String.format("%x", Integer.parseInt(fragBinary.substring(3), 2))
+                        + ipPackeString.substring(21, 23);
+                int fragOffset = Integer.parseInt(fragOffsetString, 16);
+                int ttl = Integer.parseInt(ipPackeString.substring(24, 26), 16);
+                int protocol = Integer.parseInt(ipPackeString.substring(27, 29), 16);
+                String[] sIPTab = ipPackeString.substring(36, 47).split(" ");
+                String[] dIPTab = ipPackeString.substring(48, 60).split(" ");
+                String sIP = "";
+                String dIP = "";
+                for (int i = 0; i < 4; i++) {
+                    sIP += Integer.parseInt(sIPTab[i], 16);
+                    dIP += Integer.parseInt(dIPTab[i], 16);
+                    if (i < 3) {
+                        sIP += ".";
+                        dIP += ".";
+                    }
+                }
+                this.ipPacket = new IPPacket(version, headerLength, totalLength, id, r, df, mf, fragOffset, ttl,
+                        protocol, sIP, dIP);
+            } else {
+                ipPacket = null;
             }
-            this.ipPacket = new IPPacket(version, headerLength, totalLength, id, r, df, mf, fragOffset, ttl, protocol,
-                    sIP, dIP);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -116,21 +127,25 @@ public class Split {
     // }
 
     public Ethernet getEthernetFrame() {
-        this.parseEthernetFrame();
+        if (this.ethernetFrame == null) {
+            this.parseEthernetFrame();
+        }
         return this.ethernetFrame;
     }
 
     public IPPacket getIpPacket() {
-        this.parseIPPacket();
+        if (this.ipPacket == null) {
+            this.parseIPPacket();
+        }
         return this.ipPacket;
     }
 
     public TCPSegment getTcpSegment() {
+        this.parseIPPacket();
         if (this.ipPacket == null) {
-            this.parseIPPacket();
+            return null;
         }
         this.parseTCPSegment();
-        this.parseIPPacket();
         return this.tcpSegment;
     }
 
@@ -145,5 +160,25 @@ public class Split {
             asciiString.append((char) Integer.parseInt(hexString.substring(i, i + 2), 16));
         }
         return asciiString.toString();
+    }
+
+    private HashMap<String, Packet> toMap() {
+        HashMap<String, Packet> map = new HashMap<String, Packet>();
+        map.put("ethernet", this.getEthernetFrame());
+        map.put("ip", this.getIpPacket());
+        map.put("tcp", this.getTcpSegment());
+        return map;
+    }
+
+    public ArrayList<HashMap<String, Packet>> parseFile() throws Exception {
+        ArrayList<HashMap<String, Packet>> parsedPackets = new ArrayList<HashMap<String, Packet>>();
+        BufferedReader bf = new BufferedReader(new FileReader(file));
+        HashMap<String, Packet> map = new HashMap<String, Packet>();
+        while ((this.packets = bf.readLine()) != null) {
+            map = this.toMap();
+            parsedPackets.add(map);
+        }
+        bf.close();
+        return parsedPackets;
     }
 }

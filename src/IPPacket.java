@@ -1,4 +1,4 @@
-public class IPPacket {
+public class IPPacket implements Packet {
     private int version;
     private int headerLength;
     private int totalLength;

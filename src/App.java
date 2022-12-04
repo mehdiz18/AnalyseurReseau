@@ -1,24 +1,20 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class App {
     public static void main(String[] args) throws Exception {
-        CleanFile cleanFile = new CleanFile("./samples/http.txt");
-        File file = cleanFile.cleanFile("./samples/cleanHttp");
-        BufferedReader bf = new BufferedReader(new FileReader(file));
-        String st = "";
-        int i = 1;
-        while ((st = bf.readLine()) != null) {
-            System.out.println("Trame: " + i);
-            Split sp = new Split(st);
-            System.out.println(sp.getEthernetFrame());
-            System.out.println(sp.getIpPacket());
-            System.out.println(sp.getTcpSegment());
-            i++;
-            System.out.println("");
+        CleanFile cleanFile = new CleanFile(args[0]);
+        File file = cleanFile.cleanFile(args[1]);
+        Parser parser = new Parser(file);
+        ArrayList<HashMap<String, Packet>> parsedPackets = parser.parseFile();
+        for (HashMap<String, Packet> map : parsedPackets) {
+            System.out.println(map.get("ethernet"));
+            System.out.println(map.get("ip"));
+            System.out.println(map.get("tcp"));
+            System.out.println();
         }
 
-        bf.close();
     }
 }
