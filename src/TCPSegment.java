@@ -38,6 +38,10 @@ public class TCPSegment implements Packet {
         return this.tcpSegmentLength;
     }
 
+    public HashMap<String, Boolean> getFlags() {
+        return flags;
+    }
+
     @Override
     public String toString() {
         String ANSI_GREEN = "\u001B[42m";
