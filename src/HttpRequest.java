@@ -2,11 +2,13 @@ public class HttpRequest implements Http {
     private String methode;
     private String url;
     private String version;
+    private String host;
 
-    public HttpRequest(String methode, String url, String version) {
+    public HttpRequest(String methode, String url, String version, String host) {
         this.methode = methode;
         this.url = url;
         this.version = version;
+        this.host = host;
     }
 
     public String getMethode() {
@@ -26,6 +28,6 @@ public class HttpRequest implements Http {
         String ANSI_PURPLE = "\u001B[45m";
         String ANSI_RESET = "\u001B[0m";
         return ANSI_PURPLE + "HTTP Request" + ANSI_RESET + " Methode: " + methode + " ; Url: " + url + " ; Version: "
-                + version;
+                + version + " ; Host: " + host;
     }
 }

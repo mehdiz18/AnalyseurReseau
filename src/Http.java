@@ -1,2 +1,2 @@
-public interface Http {
+public interface Http extends Packet {
 }

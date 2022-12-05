@@ -12,8 +12,6 @@ public class Parser {
     private IPPacket ipPacket;
     private TCPSegment tcpSegment;
     private Http httpHeader;
-    private String tcpSegmentString;
-    private String httpString;
     private File file;
 
     public Parser(File file) {
@@ -73,6 +71,7 @@ public class Parser {
     }
 
     private void parseTCPSegment() {
+        String tcpSegmentString;
         if (ipPacket != null) {
             int sPort;
             int dPort;
@@ -109,22 +108,33 @@ public class Parser {
         }
     }
 
-    // private void parseHttp() {
-    // httpString = tcpSegmentString.substring((tcpSegment.getTcpSegmentLength() +
-    // tcpSegment.getThl()) * 2);
-    // String[] httpTab = httpString.replace(" ", "").split("20|0d0a");
-    // System.out.println(httpString);
-    // // if (tcpSegment.getSourcePort() == 80) {
-    // // String version = toAscii(httpTab[0]);
-    // // String codeReponse = toAscii(httpTab[1]);
-    // // httpHeader = new HttpResponse(version, codeReponse);
-    // // } else if (tcpSegment.getDestinationPort() == 80) {
-    // // String methode = toAscii(httpTab[0]);
-    // // String url = toAscii(httpTab[1]);
-    // // String version = toAscii(httpTab[2]);
-    // // httpHeader = new HttpRequest(methode, url, version);
-    // // }
-    // }
+    private void parseHttp() {
+        if (tcpSegment.getTcpSegmentLength() - tcpSegment.getThl() > 0) {
+            String httpString = this.packets.substring((42 + ipPacket.getHeaderLength() * 3 + tcpSegment.getThl() * 3));
+            // System.out.println(httpString.length());
+
+            String[] httpTab = httpString.replace(" ", "").split("20|0d0a");
+            if (tcpSegment.getSourcePort() == 80) {
+                String version = toAscii(httpTab[0]);
+                // Matcher si la version correspond bien a un html
+                if (version.matches("HTTP.*")) {
+                    int codeReponse = Integer.parseInt(toAscii(httpTab[1]));
+                    String message = toAscii(httpTab[2]);
+                    httpHeader = new HttpResponse(version, codeReponse, message);
+                } else {
+                    httpHeader = null;
+                }
+            } else if (tcpSegment.getDestinationPort() == 80) {
+                String methode = toAscii(httpTab[0]);
+                String url = toAscii(httpTab[1]);
+                String version = toAscii(httpTab[2]);
+                String host = toAscii(httpTab[4]);
+                httpHeader = new HttpRequest(methode, url, version, host);
+            }
+        } else {
+            httpHeader = null;
+        }
+    }
 
     public Ethernet getEthernetFrame() {
         if (this.ethernetFrame == null) {
@@ -149,14 +159,14 @@ public class Parser {
         return this.tcpSegment;
     }
 
-    // public Http getHttp() {
-    // this.parseHttp();
-    // return httpHeader;
-    // }
+    public Http getHttp() {
+        this.parseHttp();
+        return httpHeader;
+    }
 
     private String toAscii(String hexString) {
         StringBuilder asciiString = new StringBuilder();
-        for (int i = 0; i < hexString.length(); i += 2) {
+        for (int i = 0; i < hexString.length() - 1; i += 2) {
             asciiString.append((char) Integer.parseInt(hexString.substring(i, i + 2), 16));
         }
         return asciiString.toString();
@@ -167,6 +177,7 @@ public class Parser {
         map.put("ethernet", this.getEthernetFrame());
         map.put("ip", this.getIpPacket());
         map.put("tcp", this.getTcpSegment());
+        map.put("http", this.getHttp());
         return map;
     }
 
