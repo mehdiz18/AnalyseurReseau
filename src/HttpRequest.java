@@ -25,9 +25,6 @@ public class HttpRequest implements Http {
 
     @Override
     public String toString() {
-        String ANSI_PURPLE = "\u001B[45m";
-        String ANSI_RESET = "\u001B[0m";
-        return ANSI_PURPLE + "HTTP Request" + ANSI_RESET + " Methode: " + methode + " ; Url: " + url + " ; Version: "
-                + version + " ; Host: " + host;
+        return methode + " " + url + " " + version + " " + host;
     }
 }
