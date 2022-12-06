@@ -1,10 +1,8 @@
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class Parser {
     private String packets;
@@ -95,11 +93,12 @@ public class Parser {
             String flagsString = tcpSegmentString.substring(39, 41);
             flagsString = Integer.toBinaryString(Integer.parseInt(flagsString, 16));
             flagsString = "0".repeat(8 - flagsString.length()) + flagsString;
-            int i = 2;
-            for (String flagName : flags.keySet()) {
-                flags.put(flagName, flagsString.substring(i, i + 1).equals("1"));
-                i += 1;
-            }
+            flags.put("URG", flagsString.substring(2, 3).equals("1"));
+            flags.put("ACK", flagsString.substring(3, 4).equals("1"));
+            flags.put("PSH", flagsString.substring(4, 5).equals("1"));
+            flags.put("RST", flagsString.substring(5, 6).equals("1"));
+            flags.put("SYN", flagsString.substring(6, 7).equals("1"));
+            flags.put("FIN", flagsString.substring(7, 8).equals("1"));
             window = Integer.parseInt(tcpSegmentString.substring(42, 47).replace(" ", ""), 16);
             this.tcpSegment = new TCPSegment(sPort, dPort, seq, ack, thl,
                     ipPacket.getTotalLength() - ipPacket.getHeaderLength() - thl, flags, window);
@@ -111,7 +110,6 @@ public class Parser {
     private void parseHttp() {
         if (tcpSegment.getTcpSegmentLength() - tcpSegment.getThl() > 0) {
             String httpString = this.packets.substring((42 + ipPacket.getHeaderLength() * 3 + tcpSegment.getThl() * 3));
-            // System.out.println(httpString.length());
 
             String[] httpTab = httpString.replace(" ", "").split("20|0d0a");
             if (tcpSegment.getSourcePort() == 80) {
@@ -178,6 +176,10 @@ public class Parser {
         map.put("ip", this.getIpPacket());
         map.put("tcp", this.getTcpSegment());
         map.put("http", this.getHttp());
+        this.ethernetFrame = null;
+        this.ipPacket = null;
+        this.tcpSegment = null;
+        this.httpHeader = null;
         return map;
     }
 

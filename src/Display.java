@@ -18,11 +18,10 @@ public class Display {
             IPPacket ip = (IPPacket) packet.get("ip");
             TCPSegment tcp = (TCPSegment) packet.get("tcp");
             Http http = (Http) packet.get("http");
-            String tcpString = displayTcp(ethernet, ip, tcp);
             if (http != null) {
-                System.out.println(ANSI_PURPLE + displayHttp(tcpString, http) + ANSI_RESET + "\n");
+                System.out.println(ANSI_PURPLE + displayHttp(ethernet, ip, tcp, http) + ANSI_RESET);
             } else {
-                System.out.println(ANSI_GREEN + tcpString + ANSI_RESET + "\n");
+                System.out.println(ANSI_GREEN + displayTcp(ethernet, ip, tcp) + ANSI_RESET);
             }
         }
 
@@ -37,16 +36,26 @@ public class Display {
             }
         }
         flags += "]";
-        String tcpInfos = String.format("%s:%d (%s) |" + "-".repeat(60) + ">" + " %s:%d (%s)", ip.getSourceIP(),
+        String tcpInfos = String.format("%s:%d (%s) |" + "-".repeat(60) + ">" + "%s:%d (%s)", ip.getSourceIP(),
                 tcp.getSourcePort(), ethernet.getSourceMac(), ip.getDestinationIP(), tcp.getDestinationPort(),
                 ethernet.getDestinationMac());
         tcpInfos = tcpInfos.substring(0, tcpInfos.length() / 2) + flags + tcpInfos.substring(tcpInfos.length() / 2);
         return tcpInfos;
     }
 
-    private String displayHttp(String tcpString, Http http) {
-        String httpInfos = tcpString.substring(0, tcpString.length() / 2) + http + " "
-                + tcpString.substring(tcpString.length() / 2);
+    private String displayHttp(Ethernet ethernet, IPPacket ip, TCPSegment tcp, Http http) {
+        String flags = "[";
+        for (Map.Entry<String, Boolean> flag : tcp.getFlags().entrySet()) {
+            if (flag.getValue()) {
+                flags += flag.getKey() + " ";
+            }
+        }
+        flags += "]" + " --- " + http.toString();
+        String httpInfos = String.format("%s:%d (%s) |" + "-".repeat(60) + ">" + "%s:%d (%s)", ip.getSourceIP(),
+                tcp.getSourcePort(), ethernet.getSourceMac(), ip.getDestinationIP(), tcp.getDestinationPort(),
+                ethernet.getDestinationMac());
+        httpInfos = httpInfos.substring(0, httpInfos.length() / 2) + flags
+                + httpInfos.substring(httpInfos.length() / 2);
         return httpInfos;
     }
 }
