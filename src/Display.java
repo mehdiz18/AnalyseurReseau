@@ -20,15 +20,18 @@ public class Display {
             Http http = (Http) packet.get("http");
             if (http != null) {
                 System.out.println(ANSI_PURPLE + displayHttp(ethernet, ip, tcp, http) + ANSI_RESET);
-            } else {
+            } else if (tcp != null) {
                 System.out.println(ANSI_GREEN + displayTcp(ethernet, ip, tcp) + ANSI_RESET);
+            } else if (ip != null) {
+                System.out.println(displayIP(ethernet, ip));
+            } else {
+                System.out.println(displayEthernet(ethernet));
             }
         }
 
     }
 
     private String displayTcp(Ethernet ethernet, IPPacket ip, TCPSegment tcp) {
-
         String flags = "[";
         for (Map.Entry<String, Boolean> flag : tcp.getFlags().entrySet()) {
             if (flag.getValue()) {
@@ -57,5 +60,22 @@ public class Display {
         httpInfos = httpInfos.substring(0, httpInfos.length() / 2) + flags
                 + httpInfos.substring(httpInfos.length() / 2);
         return httpInfos;
+    }
+
+    public String displayIP(Ethernet ethernet, IPPacket ip) {
+        String ANSI_YELLOW = "\u001B[43m";
+        String ANSI_RESET = "\u001B[0m";
+        return ANSI_YELLOW
+                + String.format("%s(%s) |" + "-".repeat(60) + ">" + "%s (%s)", ip.getSourceIP(),
+                        ethernet.getSourceMac(), ip.getDestinationIP(), ethernet.getDestinationMac()).toString()
+                + ANSI_RESET;
+    }
+
+    public String displayEthernet(Ethernet ethernet) {
+        String ANSI_BLUE = "\u001B[44m";
+        String ANSI_RESET = "\u001B[0m";
+        return ANSI_BLUE + String
+                .format("%s |" + "-".repeat(60) + ">" + "%s", ethernet.getSourceMac(), ethernet.getDestinationMac())
+                .toString() + ANSI_RESET;
     }
 }

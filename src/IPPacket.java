@@ -87,4 +87,10 @@ public class IPPacket implements Packet {
         return this.dIP;
     }
 
+    public boolean isTCP() {
+        if (this.protocol != 6) {
+            return false;
+        }
+        return true;
+    }
 }

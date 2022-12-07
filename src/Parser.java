@@ -71,63 +71,71 @@ public class Parser {
     private void parseTCPSegment() {
         String tcpSegmentString;
         if (ipPacket != null) {
-            int sPort;
-            int dPort;
-            int seq;
-            int ack;
-            int thl;
-            int window;
-            HashMap<String, Boolean> flags = new HashMap<String, Boolean>();
-            flags.put("URG", null);
-            flags.put("ACK", null);
-            flags.put("PSH", null);
-            flags.put("RST", null);
-            flags.put("SYN", null);
-            flags.put("FIN", null);
-            tcpSegmentString = this.packets.substring(42 + ipPacket.getHeaderLength() * 2 + ipPacket.getHeaderLength());
-            sPort = Integer.parseInt(tcpSegmentString.substring(0, 5).replace(" ", ""), 16);
-            dPort = Integer.parseInt(tcpSegmentString.substring(6, 11).replace(" ", ""), 16);
-            seq = Integer.parseInt(tcpSegmentString.substring(12, 23).replace(" ", ""), 16);
-            ack = Integer.parseInt(tcpSegmentString.substring(24, 35).replace(" ", ""), 16);
-            thl = Integer.parseInt(tcpSegmentString.substring(36, 37), 16) * 4;
-            String flagsString = tcpSegmentString.substring(39, 41);
-            flagsString = Integer.toBinaryString(Integer.parseInt(flagsString, 16));
-            flagsString = "0".repeat(8 - flagsString.length()) + flagsString;
-            flags.put("URG", flagsString.substring(2, 3).equals("1"));
-            flags.put("ACK", flagsString.substring(3, 4).equals("1"));
-            flags.put("PSH", flagsString.substring(4, 5).equals("1"));
-            flags.put("RST", flagsString.substring(5, 6).equals("1"));
-            flags.put("SYN", flagsString.substring(6, 7).equals("1"));
-            flags.put("FIN", flagsString.substring(7, 8).equals("1"));
-            window = Integer.parseInt(tcpSegmentString.substring(42, 47).replace(" ", ""), 16);
-            this.tcpSegment = new TCPSegment(sPort, dPort, seq, ack, thl,
-                    ipPacket.getTotalLength() - ipPacket.getHeaderLength() - thl, flags, window);
-        } else {
-            this.tcpSegment = null;
+            if (ipPacket.isTCP()) {
+                int sPort;
+                int dPort;
+                Long seq;
+                Long ack;
+                int thl;
+                int window;
+                HashMap<String, Boolean> flags = new HashMap<String, Boolean>();
+                flags.put("URG", null);
+                flags.put("ACK", null);
+                flags.put("PSH", null);
+                flags.put("RST", null);
+                flags.put("SYN", null);
+                flags.put("FIN", null);
+                tcpSegmentString = this.packets
+                        .substring(42 + ipPacket.getHeaderLength() * 2 + ipPacket.getHeaderLength());
+                sPort = Integer.parseInt(tcpSegmentString.substring(0, 5).replace(" ", ""), 16);
+                dPort = Integer.parseInt(tcpSegmentString.substring(6, 11).replace(" ", ""), 16);
+                seq = Long.parseLong(tcpSegmentString.substring(12, 23).replace(" ", ""), 16);
+                ack = Long.parseLong(tcpSegmentString.substring(24, 35).replace(" ", ""), 16);
+                thl = Integer.parseInt(tcpSegmentString.substring(36, 37), 16) * 4;
+                String flagsString = tcpSegmentString.substring(39, 41);
+                flagsString = Integer.toBinaryString(Integer.parseInt(flagsString, 16));
+                flagsString = "0".repeat(8 - flagsString.length()) + flagsString;
+                flags.put("URG", flagsString.substring(2, 3).equals("1"));
+                flags.put("ACK", flagsString.substring(3, 4).equals("1"));
+                flags.put("PSH", flagsString.substring(4, 5).equals("1"));
+                flags.put("RST", flagsString.substring(5, 6).equals("1"));
+                flags.put("SYN", flagsString.substring(6, 7).equals("1"));
+                flags.put("FIN", flagsString.substring(7, 8).equals("1"));
+                window = Integer.parseInt(tcpSegmentString.substring(42, 47).replace(" ", ""), 16);
+                this.tcpSegment = new TCPSegment(sPort, dPort, seq, ack, thl,
+                        ipPacket.getTotalLength() - ipPacket.getHeaderLength() - thl, flags, window);
+                return;
+            }
         }
+        this.tcpSegment = null;
     }
 
     private void parseHttp() {
-        if (tcpSegment.getTcpSegmentLength() - tcpSegment.getThl() > 0) {
-            String httpString = this.packets.substring((42 + ipPacket.getHeaderLength() * 3 + tcpSegment.getThl() * 3));
+        if (tcpSegment != null) {
+            if (tcpSegment.isHTTP()) {
+                String httpString = this.packets
+                        .substring((42 + ipPacket.getHeaderLength() * 3 + tcpSegment.getThl() * 3));
 
-            String[] httpTab = httpString.replace(" ", "").split("20|0d0a");
-            if (tcpSegment.getSourcePort() == 80) {
-                String version = toAscii(httpTab[0]);
-                // Matcher si la version correspond bien a un html
-                if (version.matches("HTTP.*")) {
-                    int codeReponse = Integer.parseInt(toAscii(httpTab[1]));
-                    String message = toAscii(httpTab[2]);
-                    httpHeader = new HttpResponse(version, codeReponse, message);
-                } else {
-                    httpHeader = null;
+                String[] httpTab = httpString.replace(" ", "").split("20|0d0a");
+                if (tcpSegment.getSourcePort() == 80) {
+                    String version = toAscii(httpTab[0]);
+                    // Matcher si la version correspond bien a un html
+                    if (version.matches("HTTP.*")) {
+                        int codeReponse = Integer.parseInt(toAscii(httpTab[1]));
+                        String message = toAscii(httpTab[2]);
+                        httpHeader = new HttpResponse(version, codeReponse, message);
+                    } else {
+                        httpHeader = null;
+                    }
+                } else if (tcpSegment.getDestinationPort() == 80) {
+                    String methode = toAscii(httpTab[0]);
+                    String url = toAscii(httpTab[1]);
+                    String version = toAscii(httpTab[2]);
+                    String host = toAscii(httpTab[4]);
+                    httpHeader = new HttpRequest(methode, url, version, host);
                 }
-            } else if (tcpSegment.getDestinationPort() == 80) {
-                String methode = toAscii(httpTab[0]);
-                String url = toAscii(httpTab[1]);
-                String version = toAscii(httpTab[2]);
-                String host = toAscii(httpTab[4]);
-                httpHeader = new HttpRequest(methode, url, version, host);
+            } else {
+                httpHeader = null;
             }
         } else {
             httpHeader = null;
@@ -188,8 +196,10 @@ public class Parser {
         BufferedReader bf = new BufferedReader(new FileReader(file));
         HashMap<String, Packet> map = new HashMap<String, Packet>();
         while ((this.packets = bf.readLine()) != null) {
-            map = this.toMap();
-            parsedPackets.add(map);
+            if (!this.packets.isBlank()) {
+                map = this.toMap();
+                parsedPackets.add(map);
+            }
         }
         bf.close();
         return parsedPackets;

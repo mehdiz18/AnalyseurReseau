@@ -17,7 +17,7 @@
             "mainClass": "App",
             "projectName": "ProjetReseau_ff7d1708",
             "args": [
-                "./samples/http.txt",
+                "./samples/trm1.txt",
                 "./samples/cleanFile"
             ]
         }
