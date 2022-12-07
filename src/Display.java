@@ -62,7 +62,7 @@ public class Display {
         return httpInfos;
     }
 
-    public String displayIP(Ethernet ethernet, IPPacket ip) {
+    private String displayIP(Ethernet ethernet, IPPacket ip) {
         String ANSI_YELLOW = "\u001B[43m";
         String ANSI_RESET = "\u001B[0m";
         return ANSI_YELLOW
@@ -71,7 +71,7 @@ public class Display {
                 + ANSI_RESET;
     }
 
-    public String displayEthernet(Ethernet ethernet) {
+    private String displayEthernet(Ethernet ethernet) {
         String ANSI_BLUE = "\u001B[44m";
         String ANSI_RESET = "\u001B[0m";
         return ANSI_BLUE + String

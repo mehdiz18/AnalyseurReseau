@@ -10,7 +10,9 @@ public class App {
         Parser parser = new Parser(file);
         ArrayList<HashMap<String, Packet>> parsedPackets = parser.parseFile();
         Display display = new Display(parsedPackets);
+        CreatePdf createPdf = new CreatePdf(parsedPackets);
         display.display();
-
+        createPdf.generatePdf();
+        System.out.println("PDF created");
     }
 }
