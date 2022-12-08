@@ -6,7 +6,7 @@ public class App {
 
     public static void main(String[] args) throws Exception {
         CleanFile cleanFile = new CleanFile(args[0]);
-        File file = cleanFile.cleanFile("./out/cleanFile");
+        File file = cleanFile.cleanFile("./cleanFile.txt");
         Parser parser = new Parser(file);
         ArrayList<HashMap<String, Packet>> parsedPackets = parser.parseFile();
         Display display = new Display(parsedPackets);

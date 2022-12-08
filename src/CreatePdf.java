@@ -19,7 +19,7 @@ public class CreatePdf {
     }
 
     public void generatePdf() throws Exception {
-        PdfWriter pdfWrite = new PdfWriter("./out/output" + LocalDateTime.now() + ".pdf");
+        PdfWriter pdfWrite = new PdfWriter("./output" + LocalDateTime.now() + ".pdf");
         PdfDocument pdf = new PdfDocument(new PdfWriter(pdfWrite));
         Document document = new Document(pdf, PageSize.A4.rotate());
         // Create the header of the file
