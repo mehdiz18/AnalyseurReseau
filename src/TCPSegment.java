@@ -1,16 +1,16 @@
 import java.util.HashMap;
 
-public class TCPSegment {
+public class TCPSegment implements Packet {
     private int sPort;
     private int dPort;
-    private int seq;
-    private int ack;
+    private long seq;
+    private long ack;
     private int thl;
     private int window;
     private int tcpSegmentLength;
     private HashMap<String, Boolean> flags;
 
-    public TCPSegment(int sPort, int dPort, int seq, int ack, int thl, int tcpSegmentLength,
+    public TCPSegment(int sPort, int dPort, long seq, long ack, int thl, int tcpSegmentLength,
             HashMap<String, Boolean> flags, int window) {
         this.sPort = sPort;
         this.dPort = dPort;
@@ -36,6 +36,17 @@ public class TCPSegment {
 
     public int getTcpSegmentLength() {
         return this.tcpSegmentLength;
+    }
+
+    public HashMap<String, Boolean> getFlags() {
+        return flags;
+    }
+
+    public boolean isHTTP() {
+        if ((this.sPort == 80 || this.dPort == 80) && this.getTcpSegmentLength() - this.getThl() > 0) {
+            return true;
+        }
+        return false;
     }
 
     @Override

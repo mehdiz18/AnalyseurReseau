@@ -1,4 +1,4 @@
-public class Ethernet {
+public class Ethernet implements Packet {
     private String destinationMac;
     private String sourceMac;
     private String type;
@@ -6,6 +6,30 @@ public class Ethernet {
     public Ethernet(String destinationMac, String sourceMac, String type) {
         this.destinationMac = destinationMac;
         this.sourceMac = sourceMac;
+        this.type = type;
+    }
+
+    public String getDestinationMac() {
+        return this.destinationMac;
+    }
+
+    public void setDestinationMac(String destinationMac) {
+        this.destinationMac = destinationMac;
+    }
+
+    public String getSourceMac() {
+        return this.sourceMac;
+    }
+
+    public void setSourceMac(String sourceMac) {
+        this.sourceMac = sourceMac;
+    }
+
+    public String getType() {
+        return this.type;
+    }
+
+    public void setType(String type) {
         this.type = type;
     }
 

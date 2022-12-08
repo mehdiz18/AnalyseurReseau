@@ -1,8 +1,8 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.PrintWriter;
 
 public class CleanFile {
     private File file;
@@ -15,26 +15,25 @@ public class CleanFile {
         File cleanFile = new File(cleanFilePath);
         try {
             BufferedReader bf = new BufferedReader(new FileReader(this.file));
-            BufferedWriter bWriter = new BufferedWriter(new FileWriter(cleanFile));
+            PrintWriter bWriter = new PrintWriter(new FileWriter(cleanFile));
             String st;
             String[] stTab;
+            int line = 1;
             while ((st = bf.readLine()) != null) {
                 // Sauter les lignes vides
-                if (st.isBlank()) {
-                    bWriter.newLine();
+                if (st.isBlank() || st.split("  +").length < 2) {
+                    bWriter.print("\n");
                 } else {
-                    String cleanString = "";
                     // Je split sur 2 espaces ou plus
                     stTab = st.split("  +");
+                    if (stTab[0].equals("0000") && line != 1) {
+                        bWriter.println();
+                    }
                     // Si je rencontre du texte
                     if (stTab.length >= 2) {
-                        for (int j = 1; j < stTab.length; j++) {
-                            if (stTab[j].matches("^[0-9a-fA-F ]+$")) {
-                                cleanString += stTab[j];
-                            }
-                        }
-                        bWriter.write(cleanString + " ", 0, cleanString.length() + 1);
+                        bWriter.print(stTab[1] + " ");
                     }
+                    line++;
                 }
             }
             bf.close();
