@@ -131,7 +131,13 @@ public class Parser {
                     String methode = toAscii(httpTab[0]);
                     String url = toAscii(httpTab[1]);
                     String version = toAscii(httpTab[2]);
-                    String host = toAscii(httpTab[4]);
+                    int i;
+                    for (i = 0; i < httpTab.length; i++) {
+                        if (toAscii(httpTab[i]).equals("Host:")) {
+                            break;
+                        }
+                    }
+                    String host = toAscii(httpTab[i + 1]);
                     httpHeader = new HttpRequest(methode, url, version, host);
                 }
             } else {

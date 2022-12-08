@@ -1,16 +1,15 @@
-import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.DeviceRgb;
 import com.itextpdf.kernel.geom.PageSize;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.properties.HorizontalAlignment;
 import com.itextpdf.layout.properties.TextAlignment;
 
 public class CreatePdf {
@@ -21,8 +20,7 @@ public class CreatePdf {
     }
 
     public void generatePdf() throws Exception {
-        PdfWriter pdfWrite = new PdfWriter("./out/output" + LocalDateTime.now().getHour()
-                + LocalDateTime.now().getMinute() + LocalDateTime.now().getSecond() + ".pdf");
+        PdfWriter pdfWrite = new PdfWriter("./out/output" + LocalDateTime.now() + ".pdf");
         PdfDocument pdf = new PdfDocument(new PdfWriter(pdfWrite));
         Document document = new Document(pdf, PageSize.A4.rotate());
         // Create the header of the file
@@ -48,6 +46,7 @@ public class CreatePdf {
                 p = new Paragraph(generateEthernet(ethernet));
                 p.setBackgroundColor(new DeviceRgb(232, 220, 125));
             }
+            p.setTextAlignment(TextAlignment.CENTER);
             p.setFontSize(9);
             document.add(p);
         }
